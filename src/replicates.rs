@@ -1,4 +1,3 @@
-use crate::anova::Anova;
 use crate::data::{Data, FromData};
 use std::collections::HashMap;
 
@@ -22,14 +21,6 @@ pub struct Replicate {
     pub values: Vec<f64>,
 }
 
-impl Anova for Replicate {
-    fn mean(&self) -> f64 {
-        let sum: f64 = self.values.iter().sum();
-        let count: f64 = self.values.len() as f64;
-        sum / count
-    }
-}
-
 impl Default for Replicate {
     fn default() -> Self {
         Self::new("", "")
@@ -43,5 +34,14 @@ impl Replicate {
             operator: operator.to_owned(),
             values: Vec::new(),
         }
+    }
+    pub fn mean(&self) -> f64 {
+        let sum: f64 = self.values.iter().sum();
+        let count: f64 = self.values.len() as f64;
+        sum / count
+    }
+    pub fn sqdiff(&self) -> f64 {
+        let mean = self.mean();
+        self.values.iter().map(|v| (v - mean).powi(2)).sum()
     }
 }

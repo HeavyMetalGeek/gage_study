@@ -9,6 +9,7 @@ pub struct DataSet {
     pub parts: Vec<Part>,
     pub operators: Vec<Operator>,
     pub replicates: Vec<Replicate>,
+    pub use_interaction: bool,
 }
 
 impl Default for DataSet {
@@ -25,6 +26,7 @@ impl DataSet {
             parts: Vec::new(),
             operators: Vec::new(),
             replicates: Vec::new(),
+            use_interaction: true,
         }
     }
     pub fn from_data(name: &str, data: &[Data]) -> Self {
@@ -34,6 +36,11 @@ impl DataSet {
             parts: Vec::from_data(data),
             operators: Vec::from_data(data),
             replicates: Vec::from_data(data),
+            use_interaction: true,
         }
+    }
+    pub fn ignore_interaction(mut self) -> Self {
+        self.use_interaction = false;
+        self
     }
 }
