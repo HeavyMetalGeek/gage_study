@@ -1,14 +1,23 @@
+//! # Gage Study
+//!
+//! This library provides the data structures needed for producing gage study repeatability and
+//! reporducability metrics.  
+//!
+//! # TODO list:
+//!
+//! - [x] Deserialize individual data objects from JSON
+//! - [ ] Deserialize data objects which include all replicates
+//! - [x] ANOVA table results (currently no p-values)
+//! - [ ] VarComp results
+//! - [ ] Crossed gage study result
+
 pub mod anova;
 pub mod data;
 pub mod dataset;
 pub mod jsondata;
-pub mod operators;
-pub mod parts;
-pub mod replicates;
-
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+pub mod operator;
+pub mod part;
+pub mod replicate;
 
 #[cfg(test)]
 mod tests {

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["AnovaTable","Constructs all data needed for the ANOVA table"]]};

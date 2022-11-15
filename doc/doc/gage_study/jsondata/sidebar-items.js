@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["JsonData","Struct used to deserialize JSON data"]]};

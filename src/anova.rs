@@ -1,34 +1,77 @@
 use crate::dataset::DataSet;
 use std::fmt;
 
+/// Constructs all data needed for the ANOVA table
 pub struct AnovaTable {
+    /// Total degrees of freedom: $\nu\_T = N - 1$, where $N$ is the number of measurements
     pub dof_total: usize,
+    /// [Part](crate::part::Part) degrees of freedom: $\nu\_p = p - 1$, where $p$ is the number of
+    /// parts
     pub dof_parts: usize,
+    /// [Operator](crate::operator::Operator) degrees of freedom: $\nu\_q = q - 1$, where $q$ is
+    /// the number of operators
     pub dof_operators: usize,
+    /// Repeatability degrees of freedom: $\nu\_R = pq(n - 1)$, where $n$ is the number of
+    /// replicates.  If the part-operator term is neglected, $\nu\_R = \nu\_T - \nu\_p - \nu\_q$.
     pub dof_repeatability: usize,
+    /// Part-operator interaction degrees of freedom: $\nu\_{p \cdot R} = \nu\_p \* \nu\_R
     pub dof_part_operator: usize,
+    /// Sum of squared differences between every value and the grand mean
+    /// $$
+    ///     SS\_T = \sum\_{i=1}^{p} \sum\_{j=1}^{q} \sum\_{k=1}^{n} \left(x\_{ijk} - \bar{x}\_{...}
+    ///     \right)^2
+    /// $$
     pub sumsq_total: f64,
+    /// Sum of squared differences between each part mean and the grand mean
+    /// $$
+    ///     SS\_p = qn \sum\_{i=1}^{p} \left( \bar{x}\_{i..} - \bar{x}\_{...} \right)^2    
+    /// $$
     pub sumsq_parts: f64,
+    /// Sum of squared differences between each operator mean and the grand mean
+    /// $$
+    ///     SS\_q &= pn \sum\_{j=1}^{q} \left( \bar{x}\_{.j.} - \bar{x}\_{...} \right)^2
+    /// $$
     pub sumsq_operators: f64,
+    /// Sum of squared differences between each replicate and the replicate mean
+    /// $$
+    ///     SS\_R = \sum\_{i=1}^{p} \sum\_{j=1}^{t} \sum\_{k=1}^{q} \left(x\_{ijk} - \bar{x}\_{ij.}
+    ///     \right)^2
+    /// $$
+    /// If the part-operator term is neglected, $SS\_R = SS\_T - SS\_p - SS\_q
     pub sumsq_repeatability: f64,
+    /// Sum of squared differences for the part-operator interaction:
+    /// $SS\_R = SS\_T - SS\_p - SS\_q$
     pub sumsq_part_operator: f64,
+    /// Mean of the squared differences for parts: $MS\_p = \frac{SS\_p}{\nu\_p}$
     pub meansq_parts: f64,
+    /// Mean of the squared differences for operators: $MS\_q = \frac{SS\_q}{\nu\_q}$
     pub meansq_operators: f64,
+    /// Mean of the squared differences for repeatability: $MS\_R = \frac{SS\_R}{\nu\_R}$
     pub meansq_repeatability: f64,
+    /// Mean of the squared differences for the part-operator interaction:
+    /// $MS\_{p \cdot R} = \frac{SS\_{p \cdot R}}{\nu\_{p \cdot R}}$
     pub meansq_part_operator: f64,
+    /// F-statistic for parts: $F\_p = \frac{MS\_p}{MS\_{p \cdot R}}$.  If the part-operator term
+    /// is negelected $F\_p = \frac{MS\_p}{MS\_R}$.
     pub f_parts: f64,
+    /// F-statistic for operators: $F\_q = \frac{MS\_q}{MS\_{p \cdot R}}$.  If the part-operator term
+    /// is negelected $F\_q = \frac{MS\_q}{MS\_R}$.
     pub f_operators: f64,
+    /// F-statistic for the part-operator interaction: $F\_q = \frac{MS\_q}{MS\_R}$    
     pub f_part_operator: f64,
+    /// Flag for neglecting the part-operator interaction term
     pub use_interaction: bool,
 }
 
 impl Default for AnovaTable {
+    /// Make the default AnovaTable
     fn default() -> Self {
         Self::new()
     }
 }
 
 impl fmt::Display for AnovaTable {
+    /// Defines the format for displaying the ANOVA table
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut source = format!(
             "{:<14}  {:>3}  {:>9}  {:>9}  {:>9}\n",
@@ -78,6 +121,7 @@ impl fmt::Display for AnovaTable {
 }
 
 impl AnovaTable {
+    /// Makes a new AnovaTable
     pub fn new() -> Self {
         Self {
             dof_total: 0,
@@ -100,6 +144,8 @@ impl AnovaTable {
             use_interaction: true,
         }
     }
+    /// Performs all necessary ANOVA calculations using data from a [DataSet] and populates the
+    /// AnovaTable fields
     pub fn from_data(dataset: &DataSet) -> Self {
         let mean =
             dataset.data.iter().map(|v| v.measured).sum::<f64>() as f64 / dataset.data.len() as f64;

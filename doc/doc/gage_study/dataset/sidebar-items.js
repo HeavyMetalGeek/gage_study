@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["DataSet","A struct for organizing data into individual components for analysis."]]};
