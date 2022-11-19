@@ -18,6 +18,7 @@ pub mod jsondata;
 pub mod operator;
 pub mod part;
 pub mod replicate;
+pub mod varcomp;
 
 #[cfg(test)]
 mod tests {
@@ -26,6 +27,7 @@ mod tests {
     pub use data::Data;
     pub use dataset::DataSet;
     pub use jsondata::JsonData;
+    pub use varcomp::VarCompTable;
 
     #[test]
     fn multi_operator() {
@@ -42,6 +44,8 @@ mod tests {
         let dataset = DataSet::from_data("Test", &data);
         let anova = AnovaTable::from_data(&dataset);
         println!("\n*** ANOVA ***\n{}\n\n", anova);
+        let varcomp = VarCompTable::from_anova(&anova);
+        println!("\n*** Variance Components ***\n{}\n\n", varcomp);
 
         let float_tol = 0.001;
         let sumsq_total = 120.682;
@@ -176,7 +180,7 @@ mod tests {
         );
     }
     #[test]
-    fn single_operator() {
+    fn multi_operator_no_interaction() {
         let data_path_a = "/home/heavymetalnerd/Development/rust/gage_study/operatorA.json";
         let mut jsondata_a = JsonData::new().with_source(data_path_a);
         let data_path_b = "/home/heavymetalnerd/Development/rust/gage_study/operatorB.json";
@@ -190,6 +194,8 @@ mod tests {
         let dataset = DataSet::from_data("Test", &data).ignore_interaction();
         let anova = AnovaTable::from_data(&dataset);
         println!("\n*** ANOVA ***\n{}\n\n", anova);
+        let varcomp = VarCompTable::from_anova(&anova);
+        println!("\n*** Variance Components ***\n{}\n\n", varcomp);
 
         let float_tol = 0.001;
         let sumsq_total = 120.682;
