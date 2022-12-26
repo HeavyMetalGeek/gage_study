@@ -2,7 +2,7 @@ use crate::dataset::DataSet;
 use std::fmt;
 
 /// Constructs all data needed for the ANOVA table
-pub struct AnovaTable {
+pub struct Anova {
     /// Number of parts: $p$
     pub n_parts: usize,
     /// Number of operators: $q$
@@ -69,20 +69,22 @@ pub struct AnovaTable {
     pub use_interaction: bool,
 }
 
-impl Default for AnovaTable {
+impl Default for Anova {
     /// Make the default AnovaTable
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl fmt::Display for AnovaTable {
+impl fmt::Display for Anova {
     /// Defines the format for displaying the ANOVA table
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut source = format!(
+        let mut source = "\n*** ANOVA ***\n".to_owned();
+        let anova_header = format!(
             "{:<15}  {:>3}  {:>9}  {:>9}  {:>9}\n",
             "Source", "DF", "SS", "MS", "F"
         );
+        source.push_str(&anova_header);
         let part = format!(
             "{:<15}  {:>3}  {:>9.5}  {:>9.5}  {:>9.5}\n",
             "Part", self.dof_parts, self.sumsq_parts, self.meansq_parts, self.f_parts
@@ -126,7 +128,7 @@ impl fmt::Display for AnovaTable {
     }
 }
 
-impl AnovaTable {
+impl Anova {
     /// Makes a new AnovaTable
     pub fn new() -> Self {
         Self {
