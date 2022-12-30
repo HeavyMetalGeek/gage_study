@@ -18,16 +18,16 @@ pub mod jsondata;
 pub mod operator;
 pub mod part;
 pub mod replicate;
-pub mod varcomp;
+pub mod study_evaluation;
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    pub use anova::AnovaTable;
+    pub use anova::Anova;
     pub use data::Data;
     pub use dataset::DataSet;
     pub use jsondata::JsonData;
-    pub use varcomp::VarCompTable;
+    pub use study_evaluation::StudyEvaluation;
 
     #[test]
     fn multi_operator() {
@@ -42,10 +42,12 @@ mod tests {
         data.extend(jsondata_b.deserialize_data().unwrap());
         data.extend(jsondata_c.deserialize_data().unwrap());
         let dataset = DataSet::from_data("Test", &data);
-        let anova = AnovaTable::from_data(&dataset);
-        println!("\n*** ANOVA ***\n{}\n\n", anova);
-        let varcomp = VarCompTable::from_anova(&anova);
-        println!("\n*** Variance Components ***\n{}\n\n", varcomp);
+        let anova = Anova::from_data(&dataset);
+        println!("{}", anova);
+        let varcomp = StudyEvaluation::from_anova(&anova)
+            .with_tolerance(1.0)
+            .with_process_variation(5.15);
+        println!("{}", varcomp);
 
         let float_tol = 0.001;
         let sumsq_total = 120.682;
@@ -192,10 +194,12 @@ mod tests {
         data.extend(jsondata_b.deserialize_data().unwrap());
         data.extend(jsondata_c.deserialize_data().unwrap());
         let dataset = DataSet::from_data("Test", &data).ignore_interaction();
-        let anova = AnovaTable::from_data(&dataset);
-        println!("\n*** ANOVA ***\n{}\n\n", anova);
-        let varcomp = VarCompTable::from_anova(&anova);
-        println!("\n*** Variance Components ***\n{}\n\n", varcomp);
+        let anova = Anova::from_data(&dataset);
+        println!("\n{}\n", anova);
+        let varcomp = StudyEvaluation::from_anova(&anova)
+            .with_tolerance(1.0)
+            .with_process_variation(5.15);
+        println!("\n{}\n", varcomp);
 
         let float_tol = 0.001;
         let sumsq_total = 120.682;
