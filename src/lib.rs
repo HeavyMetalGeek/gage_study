@@ -1,15 +1,10 @@
 //! # Gage Study
 //!
 //! This library provides the data structures needed for producing gage study repeatability and
-//! reporducability metrics.  
+//! reporducability metrics.
 //!
 //! # TODO list:
 //!
-//! - [x] Deserialize individual data objects from JSON
-//! - [ ] Deserialize data objects which include all replicates
-//! - [x] ANOVA table results (currently no p-values)
-//! - [ ] VarComp results
-//! - [ ] Crossed gage study result
 
 pub mod anova;
 pub mod data;
@@ -29,18 +24,47 @@ mod tests {
     pub use jsondata::JsonData;
     pub use study_evaluation::StudyEvaluation;
 
+    pub static OP_A_JSON: &str = include_str!("../operatorA.json");
+    pub static OP_B_JSON: &str = include_str!("../operatorB.json");
+    pub static OP_C_JSON: &str = include_str!("../operatorC.json");
+    pub static OP_A_CSV: &str = include_str!("../operatorA.csv");
+
+    #[test]
+    fn csv_test() {
+        let data: Vec<Data> = Data::from_raw_csv(OP_A_CSV.as_bytes());
+        let first = data[0].to_owned();
+        let expect = Data {
+            name: "a011".to_string(),
+            part: "01".to_string(),
+            operator: "A".to_string(),
+            replicate: 1,
+            measured: 2.78,
+            nominal: 3.0,
+        };
+        assert_eq!(expect.name, first.name);
+    }
+
+    #[test]
+    fn json_test() {
+        let data: Vec<Data> = Data::from_raw_json(OP_A_JSON.as_bytes());
+        let first = data[0].to_owned();
+        let expect = Data {
+            name: "a011".to_string(),
+            part: "01".to_string(),
+            operator: "A".to_string(),
+            replicate: 1,
+            measured: 2.78,
+            nominal: 3.0,
+        };
+        assert_eq!(expect.name, first.name);
+    }
+
     #[test]
     fn multi_operator() {
-        let data_path_a = "/home/heavymetalnerd/Development/rust/gage_study/operatorA.json";
-        let mut jsondata_a = JsonData::new().with_source(data_path_a);
-        let data_path_b = "/home/heavymetalnerd/Development/rust/gage_study/operatorB.json";
-        let mut jsondata_b = JsonData::new().with_source(data_path_b);
-        let data_path_c = "/home/heavymetalnerd/Development/rust/gage_study/operatorC.json";
-        let mut jsondata_c = JsonData::new().with_source(data_path_c);
         let mut data = Vec::new();
-        data.extend(jsondata_a.deserialize_data().unwrap());
-        data.extend(jsondata_b.deserialize_data().unwrap());
-        data.extend(jsondata_c.deserialize_data().unwrap());
+        data.extend(Data::from_raw_json(OP_A_JSON.as_bytes()));
+        data.extend(Data::from_raw_json(OP_B_JSON.as_bytes()));
+        data.extend(Data::from_raw_json(OP_C_JSON.as_bytes()));
         let dataset = DataSet::from_data("Test", &data);
         let anova = Anova::from_data(&dataset);
         println!("{}", anova);
@@ -183,16 +207,9 @@ mod tests {
     }
     #[test]
     fn multi_operator_no_interaction() {
-        let data_path_a = "/home/heavymetalnerd/Development/rust/gage_study/operatorA.json";
-        let mut jsondata_a = JsonData::new().with_source(data_path_a);
-        let data_path_b = "/home/heavymetalnerd/Development/rust/gage_study/operatorB.json";
-        let mut jsondata_b = JsonData::new().with_source(data_path_b);
-        let data_path_c = "/home/heavymetalnerd/Development/rust/gage_study/operatorC.json";
-        let mut jsondata_c = JsonData::new().with_source(data_path_c);
-        let mut data = Vec::new();
-        data.extend(jsondata_a.deserialize_data().unwrap());
-        data.extend(jsondata_b.deserialize_data().unwrap());
-        data.extend(jsondata_c.deserialize_data().unwrap());
+        let mut data = Data::from_raw_json(OP_A_JSON.as_bytes());
+        data.extend(Data::from_raw_json(OP_B_JSON.as_bytes()));
+        data.extend(Data::from_raw_json(OP_C_JSON.as_bytes()));
         let dataset = DataSet::from_data("Test", &data).ignore_interaction();
         let anova = Anova::from_data(&dataset);
         println!("\n{}\n", anova);
