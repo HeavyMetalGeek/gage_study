@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// Provides a conversion mechanism from [Data](crate::data::Data) structs
+/// Provides a conversion mechanism from [Data] structs
 pub trait FromData {
     fn from_data(data: &[Data]) -> Self;
 }

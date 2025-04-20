@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["anova",""],["data",""],["dataset",""],["jsondata",""],["operator",""],["part",""],["replicate",""]]};
+window.SIDEBAR_ITEMS = {"mod":["anova","data","dataset","jsondata","operator","part","replicate","study_evaluation"]};
