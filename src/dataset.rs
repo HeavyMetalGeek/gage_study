@@ -3,6 +3,7 @@ use crate::operator::Operator;
 use crate::part::Part;
 use crate::replicate::Replicate;
 
+#[derive(Debug, Default)]
 /// A struct for organizing data into individual components for analysis.
 pub struct DataSet {
     /// The identifier for the entire DataSet
@@ -19,25 +20,15 @@ pub struct DataSet {
     pub use_interaction: bool,
 }
 
-/// Makes the default DataSet
-impl Default for DataSet {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl DataSet {
     /// Makes a new DataSet
     pub fn new() -> Self {
         Self {
-            name: String::new(),
-            data: Vec::new(),
-            parts: Vec::new(),
-            operators: Vec::new(),
-            replicates: Vec::new(),
             use_interaction: true,
+            ..Default::default()
         }
     }
+
     /// Parses data into various components needed for analysis
     pub fn from_data(name: &str, data: &[Data]) -> Self {
         Self {
@@ -49,6 +40,7 @@ impl DataSet {
             use_interaction: true,
         }
     }
+
     /// Removes the part-operator interaction from the ANOVA
     pub fn ignore_interaction(mut self) -> Self {
         self.use_interaction = false;

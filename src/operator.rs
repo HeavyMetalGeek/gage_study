@@ -22,7 +22,7 @@ impl FromData for Vec<Operator> {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct Operator {
     /// Operator identifier
     pub id: String,
@@ -32,28 +32,22 @@ pub struct Operator {
     pub part_values: HashMap<String, Vec<f64>>,
 }
 
-/// Makes the default Operator with an empty [id](Operator::id)
-impl Default for Operator {
-    fn default() -> Self {
-        Self::new("")
-    }
-}
-
 impl Operator {
     /// Makes a new Operator
     pub fn new(id: &str) -> Self {
         Self {
             id: id.to_owned(),
-            values: Vec::new(),
-            part_values: HashMap::new(),
+            ..Default::default()
         }
     }
+
     /// Part mean: $\bar{x}\_{.j.}$
     pub fn mean(&self) -> f64 {
         let sum: f64 = self.values.iter().sum();
         let count: f64 = self.values.len() as f64;
         sum / count
     }
+
     /// Sum of squared deviations from the grand mean
     /// $$
     ///     SS\_p = pn \sum\_{j=1}^{q} \left(\bar{x}\_{.j.} - \bar{x}\_{...}\right)^2$$

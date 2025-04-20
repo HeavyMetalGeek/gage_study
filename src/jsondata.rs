@@ -6,23 +6,13 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
+#[derive(Debug, Default)]
 /// Struct used to deserialize JSON data
 pub struct JsonData {
     pub source: String,
 }
-/// Makes the default JsonData
-impl Default for JsonData {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+
 impl JsonData {
-    /// Makes a new JsonData
-    pub fn new() -> Self {
-        Self {
-            source: String::new(),
-        }
-    }
     /// Checks that [source] is a file, exists, and has a `json` extension
     fn check_source(&self) -> Result<()> {
         let path = Path::new(&self.source);

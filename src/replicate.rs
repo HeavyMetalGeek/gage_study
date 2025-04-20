@@ -16,7 +16,7 @@ impl FromData for Vec<Replicate> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct Replicate {
     /// Part [id](crate::part::Part::id)
     pub part: String,
@@ -26,29 +26,23 @@ pub struct Replicate {
     pub values: Vec<f64>,
 }
 
-/// Makes the default Part with empty part [id](crate::part::Part::id) and operator
-/// [id](crate::operator::Operator::id)
-impl Default for Replicate {
-    fn default() -> Self {
-        Self::new("", "")
-    }
-}
-
 impl Replicate {
     /// Makes a new Replicate
     pub fn new(part: &str, operator: &str) -> Self {
         Self {
             part: part.to_owned(),
             operator: operator.to_owned(),
-            values: Vec::new(),
+            ..Default::default()
         }
     }
+
     /// Factor level mean: $\bar{x}\_{ij.}$
     pub fn mean(&self) -> f64 {
         let sum: f64 = self.values.iter().sum();
         let count: f64 = self.values.len() as f64;
         sum / count
     }
+
     /// Sum of squared deviations from the mean of replicate measurements
     /// $$
     ///     SS\_n = pq \sum\_{k=1}^{n} \left(\bar{x}\_{ijk} - \bar{x}\_{ij.}\right)^2$$
