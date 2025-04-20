@@ -10,8 +10,19 @@
     <!-- To automatically render math in text elements, include the auto-render extension: -->
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js" integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous"
         onload="renderMathInElement(document.body);"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "\\(", right: "\\)", display: false},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true}
+                ]
+            });
+        });
+    </script>
   </head>
-  ...
 </html>
 
 </head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">gage_study/</div>anova.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
@@ -285,7 +296,7 @@
     <span class="doccomment">/// Repeatability degrees of freedom: $\nu\_R = pq(n - 1)$, where $n$ is the number of
     /// replicates.  If the part-operator term is neglected, $\nu\_R = \nu\_T - \nu\_p - \nu\_q$.
     </span><span class="kw">pub </span>dof_repeatability: usize,
-    <span class="doccomment">/// Part-operator interaction degrees of freedom: $\nu\_{p \cdot R} = \nu\_p \* \nu\_R
+    <span class="doccomment">/// Part-operator interaction degrees of freedom: $\nu\_{p \cdot R} = \nu\_p \* \nu\_R$
     </span><span class="kw">pub </span>dof_part_operator: usize,
     <span class="doccomment">/// Sum of squared differences between every value and the grand mean
     /// $$
@@ -300,7 +311,7 @@
     </span><span class="kw">pub </span>sumsq_parts: f64,
     <span class="doccomment">/// Sum of squared differences between each operator mean and the grand mean
     /// $$
-    ///     SS\_q &amp;= pn \sum\_{j=1}^{q} \left( \bar{x}\_{.j.} - \bar{x}\_{...} \right)^2
+    ///     SS\_q = pn \sum\_{j=1}^{q} \left( \bar{x}\_{.j.} - \bar{x}\_{...} \right)^2
     /// $$
     </span><span class="kw">pub </span>sumsq_operators: f64,
     <span class="doccomment">/// Sum of squared differences between each replicate and the replicate mean
@@ -308,7 +319,7 @@
     ///     SS\_R = \sum\_{i=1}^{p} \sum\_{j=1}^{t} \sum\_{k=1}^{q} \left(x\_{ijk} - \bar{x}\_{ij.}
     ///     \right)^2
     /// $$
-    /// If the part-operator term is neglected, $SS\_R = SS\_T - SS\_p - SS\_q
+    /// If the part-operator term is neglected, $SS\_R = SS\_T - SS\_p - SS\_q$
     </span><span class="kw">pub </span>sumsq_repeatability: f64,
     <span class="doccomment">/// Sum of squared differences for the part-operator interaction:
     /// $SS\_R = SS\_T - SS\_p - SS\_q$

@@ -22,7 +22,7 @@ pub struct Anova {
     /// Repeatability degrees of freedom: $\nu\_R = pq(n - 1)$, where $n$ is the number of
     /// replicates.  If the part-operator term is neglected, $\nu\_R = \nu\_T - \nu\_p - \nu\_q$.
     pub dof_repeatability: usize,
-    /// Part-operator interaction degrees of freedom: $\nu\_{p \cdot R} = \nu\_p \* \nu\_R
+    /// Part-operator interaction degrees of freedom: $\nu\_{p \cdot R} = \nu\_p \* \nu\_R$
     pub dof_part_operator: usize,
     /// Sum of squared differences between every value and the grand mean
     /// $$
@@ -37,7 +37,7 @@ pub struct Anova {
     pub sumsq_parts: f64,
     /// Sum of squared differences between each operator mean and the grand mean
     /// $$
-    ///     SS\_q &= pn \sum\_{j=1}^{q} \left( \bar{x}\_{.j.} - \bar{x}\_{...} \right)^2
+    ///     SS\_q = pn \sum\_{j=1}^{q} \left( \bar{x}\_{.j.} - \bar{x}\_{...} \right)^2
     /// $$
     pub sumsq_operators: f64,
     /// Sum of squared differences between each replicate and the replicate mean
@@ -45,7 +45,7 @@ pub struct Anova {
     ///     SS\_R = \sum\_{i=1}^{p} \sum\_{j=1}^{t} \sum\_{k=1}^{q} \left(x\_{ijk} - \bar{x}\_{ij.}
     ///     \right)^2
     /// $$
-    /// If the part-operator term is neglected, $SS\_R = SS\_T - SS\_p - SS\_q
+    /// If the part-operator term is neglected, $SS\_R = SS\_T - SS\_p - SS\_q$
     pub sumsq_repeatability: f64,
     /// Sum of squared differences for the part-operator interaction:
     /// $SS\_R = SS\_T - SS\_p - SS\_q$
