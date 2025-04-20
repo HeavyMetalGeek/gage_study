@@ -21,7 +21,6 @@ mod tests {
     pub use anova::Anova;
     pub use data::Data;
     pub use dataset::DataSet;
-    pub use jsondata::JsonData;
     pub use study_evaluation::StudyEvaluation;
 
     pub static OP_A_JSON: &str = include_str!("../operatorA.json");
@@ -31,7 +30,7 @@ mod tests {
 
     #[test]
     fn csv_test() {
-        let data: Vec<Data> = Data::from_raw_csv(OP_A_CSV.as_bytes());
+        let data: Vec<Data> = Data::from_raw_csv(OP_A_CSV.as_bytes()).expect("Failed to parse CSV");
         let first = data[0].to_owned();
         let expect = Data {
             name: "a011".to_string(),
@@ -46,7 +45,8 @@ mod tests {
 
     #[test]
     fn json_test() {
-        let data: Vec<Data> = Data::from_raw_json(OP_A_JSON.as_bytes());
+        let data: Vec<Data> =
+            Data::from_raw_json(OP_A_JSON.as_bytes()).expect("Failed to parse JSON");
         let first = data[0].to_owned();
         let expect = Data {
             name: "a011".to_string(),
@@ -62,9 +62,9 @@ mod tests {
     #[test]
     fn multi_operator() {
         let mut data = Vec::new();
-        data.extend(Data::from_raw_json(OP_A_JSON.as_bytes()));
-        data.extend(Data::from_raw_json(OP_B_JSON.as_bytes()));
-        data.extend(Data::from_raw_json(OP_C_JSON.as_bytes()));
+        data.extend(Data::from_raw_json(OP_A_JSON.as_bytes()).expect("Failed to parse JSON"));
+        data.extend(Data::from_raw_json(OP_B_JSON.as_bytes()).expect("Failed to parse JSON"));
+        data.extend(Data::from_raw_json(OP_C_JSON.as_bytes()).expect("Failed to parse JSON"));
         let dataset = DataSet::from_data("Test", &data);
         let anova = Anova::from_data(&dataset);
         println!("{}", anova);
@@ -205,11 +205,12 @@ mod tests {
             anova.f_part_operator
         );
     }
+
     #[test]
     fn multi_operator_no_interaction() {
-        let mut data = Data::from_raw_json(OP_A_JSON.as_bytes());
-        data.extend(Data::from_raw_json(OP_B_JSON.as_bytes()));
-        data.extend(Data::from_raw_json(OP_C_JSON.as_bytes()));
+        let mut data = Data::from_raw_json(OP_A_JSON.as_bytes()).expect("Failed to parse JSON");
+        data.extend(Data::from_raw_json(OP_B_JSON.as_bytes()).expect("Failed to parse JSON"));
+        data.extend(Data::from_raw_json(OP_C_JSON.as_bytes()).expect("Failed to parse JSON"));
         let dataset = DataSet::from_data("Test", &data).ignore_interaction();
         let anova = Anova::from_data(&dataset);
         println!("\n{}\n", anova);

@@ -6,7 +6,7 @@ pub trait FromData {
 }
 
 /// An individual data point.  This is the primary strucure used for deserialization.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Data {
     #[serde(default)]
     pub name: String,
@@ -18,49 +18,38 @@ pub struct Data {
     pub nominal: f64,
 }
 
-/// Makes the default Data
-impl Default for Data {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Data {
-    /// Makes a new Data
-    pub fn new() -> Self {
-        Self {
-            name: String::new(),
-            part: String::new(),
-            operator: String::new(),
-            replicate: 0,
-            measured: 0.0,
-            nominal: 0.0,
-        }
-    }
-
-    pub fn from_raw(raw: &[u8], ext: &str) -> Vec<Self> {
+    pub fn from_raw(raw: &[u8], ext: &str) -> anyhow::Result<Vec<Self>> {
         if ext == "csv" {
             Data::from_raw_csv(raw)
         } else if ext == "json" {
             Data::from_raw_json(raw)
         } else {
-            Vec::new()
+            Err(anyhow::anyhow!("Invalid file type provided: {}", ext))
         }
     }
 
-    pub fn from_raw_csv(raw: &[u8]) -> Vec<Self> {
-        csv::ReaderBuilder::new()
+    pub fn from_raw_csv(raw: &[u8]) -> anyhow::Result<Vec<Self>> {
+        match csv::ReaderBuilder::new()
             .has_headers(true)
             .from_reader(raw)
             .deserialize()
-            .filter_map(Result::ok)
-            .collect()
+            .collect::<Result<Vec<_>,_>>() {
+            Ok(data) => Ok(data),
+            Err(e) => {
+                log::error!("Failed to parse CSV: {e:?}");
+                Err(e.into())
+            }
+        }
     }
 
-    pub fn from_raw_json(raw: &[u8]) -> Vec<Self> {
+    pub fn from_raw_json(raw: &[u8]) -> anyhow::Result<Vec<Self>> {
         match serde_json::from_slice(raw) {
-            Ok(d) => d,
-            Err(_) => Vec::new(),
+            Ok(data) => Ok(data),
+            Err(e) => {
+                log::error!("Failed to parse JSON: {e:?}");
+                Err(e.into())
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 use crate::anova::Anova;
 use std::fmt;
 
+#[derive(Debug)]
 pub struct StudyEvaluation {
     pub total_gagerr: TotalGageRR,
     pub part_to_part: PartToPart,
@@ -143,6 +144,7 @@ impl StudyEvaluation {
             use_interaction: true,
         }
     }
+
     pub fn from_anova(anova: &Anova) -> Self {
         let use_interaction = anova.use_interaction;
         let total_gagerr = TotalGageRR::from_anova(anova);
@@ -157,16 +159,19 @@ impl StudyEvaluation {
             use_interaction,
         }
     }
+
     pub fn with_process_variation(mut self, process_variation: f64) -> Self {
         self.process_variation = process_variation;
         self
     }
+
     pub fn with_tolerance(mut self, tolerance: f64) -> Self {
         self.tolerance = tolerance;
         self
     }
 }
 
+#[derive(Debug, Default)]
 pub struct TotalGageRR {
     pub varcomp: f64,
     pub stddev: f64,
@@ -175,20 +180,11 @@ pub struct TotalGageRR {
     pub use_interaction: bool,
 }
 
-impl Default for TotalGageRR {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl TotalGageRR {
     pub fn new() -> Self {
         Self {
-            varcomp: 0.0,
-            stddev: 0.0,
-            repeatability: Repeatability::default(),
-            reproducibility: Reproducibility::default(),
             use_interaction: true,
+            ..Default::default()
         }
     }
     pub fn from_anova(anova: &Anova) -> Self {
@@ -203,11 +199,7 @@ impl TotalGageRR {
             (anova.meansq_part_operator - anova.meansq_repeatability) / anova.n_replicates as f64;
         let repeatability = Repeatability::new(anova.meansq_repeatability);
         let reproducibility = Reproducibility::new(operator_varcomp + part_operator_varcomp);
-        let varcomp = if repeatability.varcomp + reproducibility.varcomp > 0.0 {
-            repeatability.varcomp + reproducibility.varcomp
-        } else {
-            0.0
-        };
+        let varcomp = (repeatability.varcomp + reproducibility.varcomp).clamp(0.0, f64::MAX);
 
         Self {
             varcomp,
@@ -219,23 +211,15 @@ impl TotalGageRR {
     }
 }
 
+#[derive(Debug, Default)]
 pub struct Repeatability {
     pub varcomp: f64,
     pub stddev: f64,
 }
 
-impl Default for Repeatability {
-    fn default() -> Self {
-        Self::new(0.0)
-    }
-}
-
 impl Repeatability {
     pub fn new(varcomp: f64) -> Self {
-        let varcomp = match varcomp {
-            x if x < 0.0 => 0.0,
-            _ => varcomp,
-        };
+        let varcomp = varcomp.clamp(0.0, f64::MAX);
         Self {
             varcomp,
             stddev: varcomp.sqrt(),
@@ -243,23 +227,15 @@ impl Repeatability {
     }
 }
 
+#[derive(Debug, Default)]
 pub struct Reproducibility {
     pub varcomp: f64,
     pub stddev: f64,
 }
 
-impl Default for Reproducibility {
-    fn default() -> Self {
-        Self::new(0.0)
-    }
-}
-
 impl Reproducibility {
     pub fn new(varcomp: f64) -> Self {
-        let varcomp = match varcomp {
-            x if x < 0.0 => 0.0,
-            _ => varcomp,
-        };
+        let varcomp = varcomp.clamp(0.0, f64::MAX);
         Self {
             varcomp,
             stddev: varcomp.sqrt(),
@@ -267,23 +243,15 @@ impl Reproducibility {
     }
 }
 
+#[derive(Debug, Default)]
 pub struct PartToPart {
     pub varcomp: f64,
     pub stddev: f64,
 }
 
-impl Default for PartToPart {
-    fn default() -> Self {
-        Self::new(0.0)
-    }
-}
-
 impl PartToPart {
     pub fn new(varcomp: f64) -> Self {
-        let varcomp = match varcomp {
-            x if x < 0.0 => 0.0,
-            _ => varcomp,
-        };
+        let varcomp = varcomp.clamp(0.0, f64::MAX);
         Self {
             varcomp,
             stddev: varcomp.sqrt(),
@@ -295,10 +263,7 @@ impl PartToPart {
             false => anova.meansq_repeatability,
         };
         let var = (anova.meansq_parts - varterm) / (anova.n_operators * anova.n_replicates) as f64;
-        let varcomp = match var {
-            x if x < 0.0 => 0.0,
-            _ => var,
-        };
+        let varcomp = var.clamp(0.0, f64::MAX);
 
         Self {
             varcomp,
@@ -307,23 +272,15 @@ impl PartToPart {
     }
 }
 
+#[derive(Debug, Default)]
 pub struct TotalVariation {
     pub varcomp: f64,
     pub stddev: f64,
 }
 
-impl Default for TotalVariation {
-    fn default() -> Self {
-        Self::new(0.0)
-    }
-}
-
 impl TotalVariation {
     pub fn new(varcomp: f64) -> Self {
-        let varcomp = match varcomp {
-            x if x < 0.0 => 0.0,
-            _ => varcomp,
-        };
+        let varcomp = varcomp.clamp(0.0, f64::MAX);
         Self {
             varcomp,
             stddev: varcomp.sqrt(),

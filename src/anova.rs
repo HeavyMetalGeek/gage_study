@@ -1,6 +1,8 @@
 use crate::dataset::DataSet;
 use std::fmt;
+use log::debug;
 
+#[derive(Debug, Default)]
 /// Constructs all data needed for the ANOVA table
 pub struct Anova {
     /// Number of parts: $p$
@@ -30,7 +32,7 @@ pub struct Anova {
     pub sumsq_total: f64,
     /// Sum of squared differences between each part mean and the grand mean
     /// $$
-    ///     SS\_p = qn \sum\_{i=1}^{p} \left( \bar{x}\_{i..} - \bar{x}\_{...} \right)^2    
+    ///     SS\_p = qn \sum\_{i=1}^{p} \left( \bar{x}\_{i..} - \bar{x}\_{...} \right)^2
     /// $$
     pub sumsq_parts: f64,
     /// Sum of squared differences between each operator mean and the grand mean
@@ -63,17 +65,10 @@ pub struct Anova {
     /// F-statistic for operators: $F\_q = \frac{MS\_q}{MS\_{p \cdot R}}$.  If the part-operator term
     /// is negelected $F\_q = \frac{MS\_q}{MS\_R}$.
     pub f_operators: f64,
-    /// F-statistic for the part-operator interaction: $F\_q = \frac{MS\_q}{MS\_R}$    
+    /// F-statistic for the part-operator interaction: $F\_q = \frac{MS\_q}{MS\_R}$
     pub f_part_operator: f64,
     /// Flag for neglecting the part-operator interaction term
     pub use_interaction: bool,
-}
-
-impl Default for Anova {
-    /// Make the default AnovaTable
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 impl fmt::Display for Anova {
@@ -132,97 +127,98 @@ impl Anova {
     /// Makes a new AnovaTable
     pub fn new() -> Self {
         Self {
-            n_parts: 0,
-            n_operators: 0,
-            n_replicates: 0,
-            dof_total: 0,
-            dof_parts: 0,
-            dof_operators: 0,
-            dof_repeatability: 0,
-            dof_part_operator: 0,
-            sumsq_total: 0.0,
-            sumsq_parts: 0.0,
-            sumsq_operators: 0.0,
-            sumsq_repeatability: 0.0,
-            sumsq_part_operator: 0.0,
-            meansq_parts: 0.0,
-            meansq_operators: 0.0,
-            meansq_repeatability: 0.0,
-            meansq_part_operator: 0.0,
-            f_parts: 0.0,
-            f_operators: 0.0,
-            f_part_operator: 0.0,
             use_interaction: true,
+            ..Default::default()
         }
     }
     /// Performs all necessary ANOVA calculations using data from a [DataSet] and populates the
     /// AnovaTable fields
     pub fn from_data(dataset: &DataSet) -> Self {
-        let mean =
-            dataset.data.iter().map(|v| v.measured).sum::<f64>() as f64 / dataset.data.len() as f64;
+        let mean = dataset.data.iter().map(|v| v.measured).sum::<f64>() / dataset.data.len() as f64;
+        debug!(target: "anova", "mean: {mean}");
         let n_parts = dataset.parts.len();
+        debug!(target: "anova", "# Parts: {n_parts}");
         let n_operators = dataset.operators.len();
+        debug!(target: "anova", "# Operators: {n_operators}");
         let n_replicates = dataset.replicates[0].values.len();
+        debug!(target: "anova", "# Replicates: {n_replicates}");
         let dof_total = (n_parts * n_operators * n_replicates) - 1;
+        debug!(target: "anova", "DOF Total: {dof_total}");
         let dof_parts = n_parts - 1;
+        debug!(target: "anova", "DOF Parts: {dof_parts}");
         let dof_operators = n_operators - 1;
+        debug!(target: "anova", "DOF Operators: {dof_operators}");
         let dof_part_operator = match (dataset.use_interaction, n_operators) {
-            (true, 2..=usize::MAX) => dof_parts * dof_operators,
+            (true, 2..) => dof_parts * dof_operators,
             (_, _) => 0,
         };
+        debug!(target: "anova", "DOF Part-Operator: {dof_part_operator}");
         let dof_repeatability = match (dataset.use_interaction, n_operators) {
-            (true, 2..=usize::MAX) => n_parts * n_operators * (n_replicates - 1),
+            (true, 2..) => n_parts * n_operators * (n_replicates - 1),
             (_, _) => dof_total - dof_parts - dof_operators,
         };
+        debug!(target: "anova", "DOF Repeatability: {dof_repeatability}");
         // Calculate sum of squared deviations
         let sumsq_total = dataset
             .data
             .iter()
             .map(|d| (d.measured - mean).powi(2))
             .sum();
+        debug!(target: "anova", "Sum Sq Total: {sumsq_total}");
         let sumsq_parts = (n_operators * n_replicates) as f64
             * dataset.parts.iter().map(|p| p.sqdiff(mean)).sum::<f64>();
+        debug!(target: "anova", "Sum Sq Parts: {sumsq_parts}");
         let sumsq_operators = (n_parts * n_replicates) as f64
             * dataset
                 .operators
                 .iter()
                 .map(|o| o.sqdiff(mean))
                 .sum::<f64>();
+        debug!(target: "anova", "Sum Sq Operators: {sumsq_operators}");
 
         let sumsq_repeatability = match (dataset.use_interaction, n_operators) {
-            (true, 2..=usize::MAX) => dataset.replicates.iter().map(|r| r.sqdiff()).sum(),
+            (true, 2..) => dataset.replicates.iter().map(|r| r.sqdiff()).sum(),
             (_, _) => sumsq_total - sumsq_parts - sumsq_operators,
         };
+        debug!(target: "anova", "Sum Sq Repeatability: {sumsq_repeatability}");
         let sumsq_part_operator = match (dataset.use_interaction, n_operators) {
-            (true, 2..=usize::MAX) => {
+            (true, 2..) => {
                 sumsq_total - (sumsq_parts + sumsq_operators + sumsq_repeatability)
             }
             (_, _) => 0.0,
         };
+        debug!(target: "anova", "Sum Sq Part-Operator: {sumsq_part_operator}");
         // Calculate mean squared
         let meansq_parts = sumsq_parts / dof_parts as f64;
+        debug!(target: "anova", "Mean Sq Parts: {meansq_parts}");
         let meansq_operators = match n_operators {
             0 | 1 => 0.0,
             _ => sumsq_operators / dof_operators as f64,
         };
+        debug!(target: "anova", "Mean Sq Operators: {meansq_operators}");
         let meansq_repeatability = sumsq_repeatability / dof_repeatability as f64;
+        debug!(target: "anova", "Mean Sq Repeatability: {meansq_repeatability}");
         let meansq_part_operator = match (dataset.use_interaction, n_operators) {
-            (true, 2..=usize::MAX) => sumsq_part_operator / dof_part_operator as f64,
+            (true, 2..) => sumsq_part_operator / dof_part_operator as f64,
             (_, _) => 0.0,
         };
+        debug!(target: "anova", "Mean Sq Part-Operator: {meansq_part_operator}");
         // Calculate F-Statistics
         let f_parts = match (dataset.use_interaction, n_operators) {
-            (true, 2..=usize::MAX) => meansq_parts / meansq_part_operator,
+            (true, 2..) => meansq_parts / meansq_part_operator,
             (_, _) => meansq_parts / meansq_repeatability,
         };
+        debug!(target: "anova", "F-value Parts: {f_parts}");
         let f_operators = match (dataset.use_interaction, n_operators) {
-            (true, 2..=usize::MAX) => meansq_operators / meansq_part_operator,
+            (true, 2..) => meansq_operators / meansq_part_operator,
             (_, _) => meansq_operators / meansq_repeatability,
         };
+        debug!(target: "anova", "F-value Operators: {f_parts}");
         let f_part_operator = match (dataset.use_interaction, n_operators) {
-            (true, 2..=usize::MAX) => meansq_part_operator / meansq_repeatability,
+            (true, 2..) => meansq_part_operator / meansq_repeatability,
             (_, _) => 0.0,
         };
+        debug!(target: "anova", "F-value Part-Operator: {f_part_operator}");
 
         Self {
             n_parts,
